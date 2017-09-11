@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Engine.Network.Interfaces;
 
-namespace Engine.Network
+namespace Engine.Network.Defaults
 {
     public static class OrderIO
     {
-        public static List<Order> ToOrderList(this byte[] bytes, World world)
+        public static List<IOrder> ToOrderList(this byte[] bytes , IWorld world)
         {
             var ms = new MemoryStream(bytes, 4, bytes.Length - 4);
             var reader = new BinaryReader(ms);
-            var ret = new List<Order>();
+            var ret = new List<IOrder>();
             while (ms.Position < ms.Length)
             {
                 var o = Order.Deserialize(world, reader);
@@ -21,6 +22,18 @@ namespace Engine.Network
             }
 
             return ret;
+        }
+
+        public static byte[] SerializeSync(int sync)
+        {
+            var ms = new MemoryStream();
+            using (var writer = new BinaryWriter(ms))
+            {
+                writer.Write((byte)0x65);
+                writer.Write(sync);
+            }
+
+            return ms.ToArray();
         }
     }
 }

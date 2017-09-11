@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Engine.Network.Interfaces;
 
 namespace Engine.FileFormats
 {
@@ -13,7 +14,7 @@ namespace Engine.FileFormats
         public const int MetaEndMarker = -2;
         public const int MetaVersion = 0x00000001;
 
-        public readonly GameInformation GameInfo;
+        public readonly IGameInformation GameInfo;
 
         public void Write(BinaryWriter writer)
         {
@@ -26,7 +27,7 @@ namespace Engine.FileFormats
             {
                 // Write lobby info data
                 writer.Flush();
-                dataLength += writer.BaseStream.WriteString(Encoding.UTF8, GameInfo.Serialize());
+                //dataLength += writer.BaseStream.WriteString(Encoding.UTF8, GameInfo.Serialize());
             }
 
             // Write total length & end marker

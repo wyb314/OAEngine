@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Engine
+namespace Engine.Network.Interfaces
 {
-    public sealed class World
+    public interface IWorld
     {
+        int SyncHash();
     }
 }

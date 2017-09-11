@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Engine.Network
+namespace Engine.Network.Interfaces
 {
     public interface IConnection : IDisposable
     {
