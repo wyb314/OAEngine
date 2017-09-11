@@ -55,20 +55,63 @@ namespace Engine.Network.Server
             private set { this.discoverNatDevices = value; }
             get { return this.discoverNatDevices; }
         }
-        
-        public bool AllowPortForward = true;
-        
-        public int NatDiscoveryTimeout = 1000;
-        
-        public string Map = null;
-        
-        public string[] Ban = { };
-        
-        public bool EnableSingleplayer = false;
 
-        public bool QueryMapRepository = true;
+        private bool allowPortForward = true;
 
-        public string TimestampFormat = "s";
+        public bool AllowPortForward
+        {
+            private set { this.allowPortForward = value; }
+            get { return this.allowPortForward; }
+        }
+
+        private int natDiscoveryTimeout = 1000;
+
+        public int NatDiscoveryTimeout
+        {
+            private set { this.natDiscoveryTimeout = value; }
+            get { return this.natDiscoveryTimeout; }
+        }
+
+        private string map = null;
+
+        public string Map
+        {
+            private set { this.map = value; }
+            get { return this.map; }
+        }
+
+        private string[] ban = null;
+
+        public string[] Ban
+        {
+            private set { this.ban = value; }
+            get { return this.ban; }
+        }
+
+        private bool enableSingleplayer = false;
+
+        public bool EnableSingleplayer
+        {
+            private set { this.enableSingleplayer = value; }
+            get { return this.enableSingleplayer; }
+        }
+
+
+        private bool queryMapRepository = true;
+
+        public bool QueryMapRepository
+        {
+            private set { this.queryMapRepository = value; }
+            get { return this.queryMapRepository; }
+        }
+
+        private string timestampFormat = "s";
+
+        public string TimestampFormat
+        {
+            private set { this.timestampFormat = value; }
+            get { return this.timestampFormat; }
+        }
 
         public ServerSettings Clone()
         {

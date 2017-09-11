@@ -50,4 +50,7 @@ namespace Engine.Network.Server
         void Tick(IServer<T, U> server);
         int TickTimeout { get; }
     }
+
+    public abstract class ServerTrait { }
+    
 }

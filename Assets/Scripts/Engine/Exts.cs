@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
 namespace Engine
@@ -19,6 +20,11 @@ namespace Engine
             if (!d.TryGetValue(k, out ret))
                 d.Add(k, ret = createFn(k));
             return ret;
+        }
+
+        public static bool HasAttribute<T>(this MemberInfo mi)
+        {
+            return mi.GetCustomAttributes(typeof(T), true).Length != 0;
         }
     }
 }

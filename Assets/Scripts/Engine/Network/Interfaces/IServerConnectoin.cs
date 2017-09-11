@@ -1,11 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System.Net.Sockets;
 
 namespace Engine.Network.Interfaces
 {
-    public interface IServerConnectoin
+    public interface IServerConnectoin<T, U> where T : IClient where U : IClientPing
     {
+        int PlayerIndex { get; }
+
+        Socket Socket { get; }
+
+        void ReadData(IServer<T, U> server);
     }
 }

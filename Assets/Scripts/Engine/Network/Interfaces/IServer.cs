@@ -15,15 +15,19 @@ namespace Engine.Network.Interfaces
 
         int Port { get; }
         
-        List<T> Conns { get; }
+        List<IServerConnectoin<T, U>> Conns { get; }
 
-        List<T> PreConns { get; }
+        List<IServerConnectoin<T,U>> PreConns { get; }
         
         Session<T, U> LobbyInfo { get; }
 
         TypeDictionary serverTraits { get; }
 
         ServerState State { get; }
+
+        bool Dedicated { get; }
+
+        ModData ModData { get; }
 
         void StartGame();
 
