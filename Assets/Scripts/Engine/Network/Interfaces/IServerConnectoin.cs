@@ -8,6 +8,8 @@ namespace Engine.Network.Interfaces
     {
         int PlayerIndex { get; }
 
+        int MostRecentFrame { get; }
+
         Socket Socket { get; }
 
         void ReadData(IServer<T, U> server);

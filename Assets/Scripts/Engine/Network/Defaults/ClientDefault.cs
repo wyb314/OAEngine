@@ -9,95 +9,40 @@ namespace Engine.Network.Defaults
 {
     public class ClientDefault : IClient
     {
-        public string Bot
+        public string Bot { set; get; }
+
+        public int Index { set; get; }
+
+        public string IpAddress { set; get; }
+
+        public bool IsAdmin { set; get; }
+
+        public string Name { set; get; }
+
+        public string Slot { set; get; }
+
+        public ClientState State { set; get; }
+
+        public int BotControllerClientIndex { set; get; }
+
+        public bool IsReady { get { return State == ClientState.Ready; } }
+        public bool IsInvalid { get { return State == ClientState.Invalid; } }
+
+        public bool IsObserver { get { return Slot == null; } }
+
+        public string Serialize()
         {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public int Index
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string IpAddress
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public bool IsAdmin
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string Name
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public string Slot
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        public ClientState State
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            set
-            {
-                throw new NotImplementedException();
-            }
+            return null;
         }
     }
+
+    public static class ClientDefaultExts
+    {
+        public static string WriteToString(this List<ClientDefault> y)
+        {
+            return null;
+        }
+    }
+
+    
 }

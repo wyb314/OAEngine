@@ -11,6 +11,8 @@ namespace Engine.Network.Defaults
     {
         public int PlayerIndex { set; get; }
 
+        public int MostRecentFrame { private set;get; }
+
         public Socket Socket { set; get; }
 
         public void ReadData(IServer<ClientDefault, ClientPingDefault> server)

@@ -13,11 +13,13 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile></CompilerResponseFile>
+    <CompilerResponseFile>
+    </CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>2017.1.0f3</UnityVersion>
-    <RootNamespace></RootNamespace>
+    <RootNamespace>
+    </RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -83,6 +85,7 @@
     <Compile Include="Assets\Scripts\Engine\Game.cs" />
     <Compile Include="Assets\Scripts\Engine\Manifest.cs" />
     <Compile Include="Assets\Scripts\Engine\ModData.cs" />
+    <Compile Include="Assets\Scripts\Engine\ModMetadata.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\ClientOrder.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\ConnectionState.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Defaults\ClientDefault.cs" />
@@ -98,6 +101,7 @@
     <Compile Include="Assets\Scripts\Engine\Network\Defaults\ReplayConnection.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Defaults\ServerConnectoinDefault.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Defaults\ServerDefault.cs" />
+    <Compile Include="Assets\Scripts\Engine\Network\Defaults\ServerOrderDefault.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Defaults\World.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Enums\ClientState.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Enums\ServerState.cs" />
@@ -114,6 +118,7 @@
     <Compile Include="Assets\Scripts\Engine\Network\Interfaces\IReplayRecorder.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Interfaces\IServer.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Interfaces\IServerConnectoin.cs" />
+    <Compile Include="Assets\Scripts\Engine\Network\Interfaces\IServerOrder.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Interfaces\ISyncReport.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\Interfaces\IWorld.cs" />
     <Compile Include="Assets\Scripts\Engine\Network\NetworkExts.cs" />

@@ -28,39 +28,39 @@ namespace Engine.Network.Defaults
         public string Mod;
         public string Version;
         public string Password;
-        [FieldLoader.Ignore]
-        public Session.Client Client;
+        public ClientDefault Client;
 
         public static HandshakeResponse Deserialize(string data)
         {
             var handshake = new HandshakeResponse();
-            handshake.Client = new Session.Client();
+            handshake.Client = new ClientDefault();
 
-            var ys = MiniYaml.FromString(data);
-            foreach (var y in ys)
-            {
-                switch (y.Key)
-                {
-                    case "Handshake":
-                        FieldLoader.Load(handshake, y.Value);
-                        break;
-                    case "Client":
-                        FieldLoader.Load(handshake.Client, y.Value);
-                        break;
-                }
-            }
+            //var ys = MiniYaml.FromString(data);
+            //foreach (var y in ys)
+            //{
+            //    switch (y.Key)
+            //    {
+            //        case "Handshake":
+            //            FieldLoader.Load(handshake, y.Value);
+            //            break;
+            //        case "Client":
+            //            FieldLoader.Load(handshake.Client, y.Value);
+            //            break;
+            //    }
+            //}
 
             return handshake;
         }
 
         public string Serialize()
         {
-            var data = new List<MiniYamlNode>();
-            data.Add(new MiniYamlNode("Handshake", null,
-                new string[] { "Mod", "Version", "Password" }.Select(p => FieldSaver.SaveField(this, p)).ToList()));
-            data.Add(new MiniYamlNode("Client", FieldSaver.Save(Client)));
+            //var data = new List<MiniYamlNode>();
+            //data.Add(new MiniYamlNode("Handshake", null,
+            //    new string[] { "Mod", "Version", "Password" }.Select(p => FieldSaver.SaveField(this, p)).ToList()));
+            //data.Add(new MiniYamlNode("Client", FieldSaver.Save(Client)));
 
-            return data.WriteToString();
+            //return data.WriteToString();
+            return null;
         }
     }
 }

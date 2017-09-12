@@ -19,5 +19,9 @@ namespace Engine.Network.Interfaces
         bool IsAdmin { set; get; }
 
         string Slot { set; get; }
+
+        int BotControllerClientIndex { set; get; }
+
+        string Serialize();
     }
 }

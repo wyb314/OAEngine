@@ -7,7 +7,7 @@ namespace Engine.Network.Server
 {
     public interface IInterpretCommand<T, U> where T : IClient where U : IClientPing
     {
-        bool InterpretCommand(IServer<T,U> server, IServerConnectoin conn, T client, string cmd);
+        bool InterpretCommand(IServer<T,U> server, IServerConnectoin<T, U> conn, T client, string cmd);
     }
 
     public interface INotifySyncLobbyInfo<T, U> where T : IClient where U : IClientPing
@@ -37,7 +37,7 @@ namespace Engine.Network.Server
 
     public interface IClientJoined<T, U> where T : IClient where U : IClientPing
     {
-        void ClientJoined(IServer<T, U> server, IServerConnectoin conn);
+        void ClientJoined(IServer<T, U> server, IServerConnectoin<T, U> conn);
     }
 
     public interface IEndGame<T, U> where T : IClient where U : IClientPing

@@ -33,12 +33,12 @@ namespace Engine.Network.Interfaces
 
         void EndGame();
 
-        void DropClient(IServerConnectoin toDrop);
+        void DropClient(IServerConnectoin<T, U> toDrop);
 
         void Shutdown();
         
-        T GetClient(IServerConnectoin conn);
+        T GetClient(IServerConnectoin<T, U> conn);
 
-
+        void InterpretServerOrder(IServerConnectoin<T, U> conn, IServerOrder so);
     }
 }

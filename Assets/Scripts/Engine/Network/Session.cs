@@ -19,6 +19,15 @@ namespace Engine.Network
             return Clients.SingleOrDefault(c => c.Index == clientID);
         }
 
+        public IEnumerable<T> NonBotClients
+        {
+            get { return Clients.Where(c => c.Bot == null); }
+        }
+
+        public string Serialize()
+        {
+            return null;
+        }
 
         public static Session<T, U> Deserialize(string data)
         {

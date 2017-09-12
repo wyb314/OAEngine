@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -49,7 +51,7 @@ namespace Engine.Network.Defaults
             Dedicated = dedicated;
             Settings = settings;
 
-            Settings.Name = OpenRA.Settings.SanitizedServerName(Settings.Name);
+            //Settings.Name = OpenRA.Settings.SanitizedServerName(Settings.Name);
 
             ModData = modData;
 
@@ -185,12 +187,12 @@ namespace Engine.Network.Defaults
                     Map = LobbyInfo.GlobalSettings.Map
                 };
 
-                DispatchOrdersToClient(newConn, 0, 0, new ServerOrder("HandshakeRequest", request.Serialize()).Serialize());
+                DispatchOrdersToClient(newConn, 0, 0, new ServerOrderDefault("HandshakeRequest", request.Serialize()).Serialize());
             }
             catch (Exception e)
             {
                 DropClient(newConn);
-                Log.Write("server", "Dropping client {0} because handshake failed: {1}", newConn.PlayerIndex.ToString(CultureInfo.InvariantCulture), e);
+                //Log.Write("server", "Dropping client {0} because handshake failed: {1}", newConn.PlayerIndex.ToString(CultureInfo.InvariantCulture), e);
             }
         }
 
@@ -198,6 +200,24 @@ namespace Engine.Network.Defaults
         public int ChooseFreePlayerIndex()
         {
             return nextPlayerIndex++;
+        }
+
+        void DispatchOrdersToClient(IServerConnectoin<ClientDefault, ClientPingDefault> c, int client, int frame, byte[] data)
+        {
+            Console.WriteLine("DispatchOrdersToClient frame->{0}".F(frame));
+            try
+            {
+                SendData(c.Socket, BitConverter.GetBytes(data.Length + 4));
+                SendData(c.Socket, BitConverter.GetBytes(client));
+                SendData(c.Socket, BitConverter.GetBytes(frame));
+                SendData(c.Socket, data);
+            }
+            catch (Exception e)
+            {
+                DropClient(c);
+                //Log.Write("server", "Dropping client {0} because dispatching orders failed: {1}",
+                //    client.ToString(CultureInfo.InvariantCulture), e);
+            }
         }
 
         static void SendData(Socket s, byte[] data)
@@ -226,27 +246,206 @@ namespace Engine.Network.Defaults
 
         public void DropClient(IServerConnectoin<ClientDefault, ClientPingDefault> toDrop)
         {
-            throw new NotImplementedException();
+            if (!PreConns.Remove(toDrop))
+            {
+                Conns.Remove(toDrop);
+
+                var dropClient = LobbyInfo.Clients.FirstOrDefault(c1 => c1.Index == toDrop.PlayerIndex);
+                if (dropClient == null)
+                    return;
+
+                var suffix = "";
+                if (State == ServerState.GameStarted)
+                    suffix = dropClient.IsObserver ? " (Spectator)" :  "";
+                SendMessage("{0}{1} has disconnected.".F(dropClient.Name, suffix));
+
+                // Send disconnected order, even if still in the lobby
+                DispatchOrdersToClients(toDrop, 0, new ServerOrderDefault("Disconnected", "").Serialize());
+
+                LobbyInfo.Clients.RemoveAll(c => c.Index == toDrop.PlayerIndex);
+                LobbyInfo.ClientPings.RemoveAll(p => p.Index == toDrop.PlayerIndex);
+
+                // Client was the server admin
+                // TODO: Reassign admin for game in progress via an order
+                if (Dedicated && dropClient.IsAdmin && State == ServerState.WaitingPlayers)
+                {
+                    // Remove any bots controlled by the admin
+                    LobbyInfo.Clients.RemoveAll(c => c.Bot != null && c.BotControllerClientIndex == toDrop.PlayerIndex);
+
+                    var nextAdmin = LobbyInfo.Clients.Where(c1 => c1.Bot == null)
+                        .MinByOrDefault(c => c.Index);
+
+                    if (nextAdmin != null)
+                    {
+                        nextAdmin.IsAdmin = true;
+                        SendMessage("{0} is now the admin.".F(nextAdmin.Name));
+                    }
+                }
+
+                DispatchOrders(toDrop, toDrop.MostRecentFrame, new byte[] { 0xbf });
+
+                // All clients have left: clean up
+                if (!Conns.Any())
+                    foreach (var t in serverTraits.WithInterface<INotifyServerEmpty<ClientDefault,ClientPingDefault>>())
+                        t.ServerEmpty(this);
+
+                if (Conns.Any() || Dedicated)
+                    SyncLobbyClients();
+
+                if (!Dedicated && dropClient.IsAdmin)
+                    Shutdown();
+            }
+
+            try
+            {
+                toDrop.Socket.Disconnect(false);
+            }
+            catch { }
+        }
+
+        public void SendMessage(string text)
+        {
+            DispatchOrdersToClients(null, 0, new ServerOrderDefault("Message", text).Serialize());
+
+            if (Dedicated)
+                Console.WriteLine("[{0}] {1}".F(DateTime.Now.ToString(Settings.TimestampFormat), text));
+        }
+
+        public void SyncLobbyClients()
+        {
+            if (State != ServerState.WaitingPlayers)
+                return;
+
+            // TODO: Only need to sync the specific client that has changed to avoid conflicts!
+            //var clientData = LobbyInfo.Clients.Select(client => client.Serialize()).ToList();
+
+            DispatchOrders(null, 0, new ServerOrderDefault("SyncLobbyClients", LobbyInfo.Clients.WriteToString()).Serialize());
+
+            foreach (var t in serverTraits.WithInterface<INotifySyncLobbyInfo<ClientDefault, ClientPingDefault>>())
+                t.LobbyInfoSynced(this);
+        }
+
+        public void DispatchOrders(IServerConnectoin<ClientDefault,ClientPingDefault> conn, int frame, byte[] data)
+        {
+            if (frame == 0 && conn != null)
+            {
+                //string log = "DispatchOrders InterpretServerOrders PlayerIndex->{0} frame->{1}".F(conn.PlayerIndex, frame);
+                //Log.Write("wybserver", log);
+                //Console.WriteLine(log);
+                InterpretServerOrders(conn, data);
+            }
+            else
+            {
+                //string log = "DispatchOrders DispatchOrdersToClients PlayerIndex->{0} frame->{1}".F(conn != null ? conn.PlayerIndex : -1, frame);
+                //Log.Write("wybserver", log);
+                //Console.WriteLine(log);
+                DispatchOrdersToClients(conn, frame, data);
+            }
+
+        }
+
+        void InterpretServerOrders(IServerConnectoin<ClientDefault, ClientPingDefault> conn, byte[] data)
+        {
+
+            var ms = new MemoryStream(data);
+            var br = new BinaryReader(ms);
+
+            try
+            {
+                while (ms.Position < ms.Length)
+                {
+                    var so = ServerOrderDefault.Deserialize(br);
+                    if (so == null) return;
+                    InterpretServerOrder(conn, so);
+                }
+            }
+            catch (EndOfStreamException) { }
+            catch (NotImplementedException) { }
+        }
+
+        /// <summary>
+        /// 解析特殊消息
+        /// </summary>
+        /// <param name="conn"></param>
+        /// <param name="so"></param>
+        public void InterpretServerOrder(IServerConnectoin<ClientDefault, ClientPingDefault> conn, IServerOrder so)
+        {
+        }
+
+        //IServerConnectoin<ClientDefault, ClientPingDefault>
+        public void DispatchOrdersToClients(IServerConnectoin<ClientDefault,ClientPingDefault> conn, int frame, byte[] data)
+        {
+            var from = conn != null ? conn.PlayerIndex : 0;
+            foreach (var c in Conns.Except(conn).ToList())
+            {
+                DispatchOrdersToClient(c, from, frame, data);
+            }
+                
         }
 
         public void EndGame()
         {
-            throw new NotImplementedException();
+            foreach (var t in serverTraits.WithInterface<IEndGame<ClientDefault,ClientPingDefault>>())
+                t.GameEnded(this);
         }
 
         public ClientDefault GetClient(IServerConnectoin<ClientDefault, ClientPingDefault> conn)
         {
-            throw new NotImplementedException();
+            return LobbyInfo.ClientWithIndex(conn.PlayerIndex);
         }
 
         public void Shutdown()
         {
-            throw new NotImplementedException();
+            State = ServerState.ShuttingDown;
         }
 
         public void StartGame()
         {
-            throw new NotImplementedException();
+            listener.Stop();
+
+            Console.WriteLine("[{0}] Game started", DateTime.Now.ToString(Settings.TimestampFormat));
+
+            // Drop any unvalidated clients
+            foreach (var c in PreConns.ToArray())
+                DropClient(c);
+
+            // Drop any players who are not ready
+            foreach (var c in Conns.Where(c => GetClient(c).IsInvalid).ToArray())
+            {
+                SendOrderTo(c, "ServerError", "You have been kicked from the server!");
+                DropClient(c);
+            }
+
+            // HACK: Turn down the latency if there is only one real player
+            if (LobbyInfo.NonBotClients.Count() == 1)
+                LobbyInfo.GlobalSettings.OrderLatency = 1;
+
+            SyncLobbyInfo();
+            State = ServerState.GameStarted;
+
+            foreach (var c in Conns)
+                foreach (var d in Conns)
+                    DispatchOrdersToClient(c, d.PlayerIndex, 0x7FFFFFFF, new byte[] { 0xBF });
+
+            DispatchOrders(null, 0,
+                new ServerOrderDefault("StartGame", "").Serialize());
+
+            foreach (var t in serverTraits.WithInterface<IStartGame<ClientDefault,ClientPingDefault>>())
+                t.GameStarted(this);
+        }
+
+        public void SendOrderTo(IServerConnectoin<ClientDefault,ClientPingDefault> conn, string order, string data)
+        {
+            DispatchOrdersToClient(conn, 0, 0, new ServerOrderDefault(order, data).Serialize());
+        }
+
+        public void SyncLobbyInfo()
+        {
+            if (State == ServerState.WaitingPlayers) // Don't do this while the game is running, it breaks things!
+                DispatchOrders(null, 0, new ServerOrderDefault("SyncInfo", LobbyInfo.Serialize()).Serialize());
+
+            foreach (var t in serverTraits.WithInterface<INotifySyncLobbyInfo<ClientDefault, ClientPingDefault>>())
+                t.LobbyInfoSynced(this);
         }
     }
 }
