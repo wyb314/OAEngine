@@ -11,7 +11,7 @@ namespace Engine.Network.Server
         private string name = "OpenRA Game";
         public string Name
         {
-            private set { name = value; }
+            set { name = value; }
             get { return name; }
         }
 

@@ -13,13 +13,11 @@
     <TargetFrameworkIdentifier>.NETFramework</TargetFrameworkIdentifier>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <TargetFrameworkProfile>Unity Subset v3.5</TargetFrameworkProfile>
-    <CompilerResponseFile>
-    </CompilerResponseFile>
+    <CompilerResponseFile></CompilerResponseFile>
     <UnityProjectType>Game:1</UnityProjectType>
     <UnityBuildTarget>StandaloneWindows64:19</UnityBuildTarget>
     <UnityVersion>2017.1.0f3</UnityVersion>
-    <RootNamespace>
-    </RootNamespace>
+    <RootNamespace></RootNamespace>
     <LangVersion Condition=" '$(VisualStudioVersion)' != '10.0' ">4</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -80,6 +78,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="OAEngine.Plugins.csproj">
+      <Project>{4E90DB34-8ACC-B4E3-9C0A-C5F9EE6EF914}</Project>
+      <Name>OAEngine.Plugins</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Assets\Scripts\Engine\Exts.cs" />
     <Compile Include="Assets\Scripts\Engine\FileFormats\ReplayMetadata.cs" />
     <Compile Include="Assets\Scripts\Engine\Game.cs" />
@@ -133,7 +137,13 @@
     <Compile Include="Assets\Scripts\Engine\Primitives\Pair.cs" />
     <Compile Include="Assets\Scripts\Engine\Primitives\ReadOnlyDictionary.cs" />
     <Compile Include="Assets\Scripts\Engine\Primitives\TypeDictionary.cs" />
+    <Compile Include="Assets\Scripts\Engine\Settings.cs" />
     <Compile Include="Assets\Scripts\Engine\Support\MersenneTwister.cs" />
+    <Compile Include="Assets\Test\TestCreateYaml.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\Plugins\YamlDotNet\Readme.txt" />
+    <None Include="Assets\Plugins\YamlDotNet\YamlDotNet.license.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="GenerateTargetFrameworkMonikerAttribute" />

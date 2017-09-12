@@ -35,13 +35,13 @@ namespace Engine.Network.Defaults
 
         public ModData ModData { private set; get; }
 
-        public ServerSettings Settings { private set; get; }
+        public ServerSettings ServerSettings { private set; get; }
         
         readonly int randomSeed;
         public readonly MersenneTwister Random = new MersenneTwister();
         readonly TcpListener listener;
 
-        public ServerDefault(IPEndPoint endpoint, ServerSettings settings, ModData modData, bool dedicated)
+        public ServerDefault(IPEndPoint endpoint, ServerSettings serverSettings, ModData modData, bool dedicated)
         {
             listener = new TcpListener(endpoint);
             listener.Start();
@@ -49,17 +49,17 @@ namespace Engine.Network.Defaults
             Ip = localEndpoint.Address;
             Port = localEndpoint.Port;
             Dedicated = dedicated;
-            Settings = settings;
+            ServerSettings = serverSettings;
 
-            //Settings.Name = OpenRA.Settings.SanitizedServerName(Settings.Name);
+            ServerSettings.Name = Engine.Settings.SanitizedServerName(ServerSettings.Name);
 
             ModData = modData;
 
             randomSeed = (int)DateTime.Now.ToBinary();
 
             // UPnP is only supported for servers created by the game client.
-            //if (!dedicated && Settings.AllowPortForward)
-            //    UPnP.ForwardPort(Settings.ListenPort, Settings.ExternalPort).Wait();
+            //if (!dedicated && ServerSettings.AllowPortForward)
+            //    UPnP.ForwardPort(ServerSettings.ListenPort, ServerSettings.ExternalPort).Wait();
 
             foreach (var trait in modData.Manifest.ServerTraits)
                 serverTraits.Add(modData.ObjectCreator.CreateObject<ServerTrait>(trait));
@@ -69,9 +69,9 @@ namespace Engine.Network.Defaults
                 GlobalSettings =
                 {
                     RandomSeed = randomSeed,
-                    Map = settings.Map,
-                    ServerName = settings.Name,
-                    EnableSingleplayer = settings.EnableSingleplayer || !dedicated,
+                    Map = serverSettings.Map,
+                    ServerName = serverSettings.Name,
+                    EnableSingleplayer = serverSettings.EnableSingleplayer || !dedicated,
                     GameUid = Guid.NewGuid().ToString()
                 }
             };
@@ -129,7 +129,7 @@ namespace Engine.Network.Defaults
                     if (State == ServerState.ShuttingDown)
                     {
                         EndGame();
-                        //if (!dedicated && Settings.AllowPortForward)
+                        //if (!dedicated && ServerSettings.AllowPortForward)
                         //    UPnP.RemovePortForward().Wait();
                         break;
                     }
@@ -146,8 +146,7 @@ namespace Engine.Network.Defaults
             { IsBackground = true }.Start();
 
         }
-
-
+        
         void AcceptConnection()
         {
             Socket newSocket;
@@ -308,7 +307,7 @@ namespace Engine.Network.Defaults
             DispatchOrdersToClients(null, 0, new ServerOrderDefault("Message", text).Serialize());
 
             if (Dedicated)
-                Console.WriteLine("[{0}] {1}".F(DateTime.Now.ToString(Settings.TimestampFormat), text));
+                Console.WriteLine("[{0}] {1}".F(DateTime.Now.ToString(ServerSettings.TimestampFormat), text));
         }
 
         public void SyncLobbyClients()
@@ -370,6 +369,7 @@ namespace Engine.Network.Defaults
         /// <param name="so"></param>
         public void InterpretServerOrder(IServerConnectoin<ClientDefault, ClientPingDefault> conn, IServerOrder so)
         {
+            UnityEngine.Debug.LogError("Receive so name->"+so.Name);
         }
 
         //IServerConnectoin<ClientDefault, ClientPingDefault>
@@ -403,7 +403,7 @@ namespace Engine.Network.Defaults
         {
             listener.Stop();
 
-            Console.WriteLine("[{0}] Game started", DateTime.Now.ToString(Settings.TimestampFormat));
+            Console.WriteLine("[{0}] Game started", DateTime.Now.ToString(ServerSettings.TimestampFormat));
 
             // Drop any unvalidated clients
             foreach (var c in PreConns.ToArray())
